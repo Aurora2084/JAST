@@ -1,0 +1,1 @@
+纯粹vibe coding构式代码，仅供娱乐。使用julia解析cpp的最小子集并编译为llvm IR,使用llvm的链接器进行链接
