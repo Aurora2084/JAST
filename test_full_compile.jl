@@ -13,8 +13,5 @@ println("Generated LLVM IR:")
 println(ir)
 
 # 编译为二进制文件
-JAST.compile_to_binary(ir, "add.exe")
-
-# 运行二进制文件测试
-println("\nRunning the binary:")
-run(`./add.exe 1 2`)
+output_file = Sys.iswindows() ? "add.exe" : "add"
+JAST.compile_to_binary(ir, output_file)
