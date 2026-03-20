@@ -1,0 +1,13 @@
+name = "JAST"
+uuid = "f6b7c465-6f98-400a-9b1c-3c791e7b8d5c"
+version = "0.1.0"
+authors = ["Your Name <your.email@example.com>"]
+dependencies = ["LLVM", "Tokenize"]
+
+[deps]
+LLVM = "929cbde3-209d-540e-8aea-75f648917ca0"
+Tokenize = "0796e94c-ce3b-5d07-9a54-7f471281c624"
+
+[compat]
+LLVM = "9.4.6"
+Tokenize = "0.5.29"
