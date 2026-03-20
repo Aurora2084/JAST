@@ -1,5 +1,7 @@
 # LLVM 代码生成
 
+using LLVM
+
 function codegen(ast::Program)::String
     ir = ""
     
@@ -22,18 +24,13 @@ function compile_to_binary(ir::String, output_file::String)
     println("1. llc $ir_file -o $output_file.s")
     println("2. gcc $output_file.s -o $output_file")
     
-    # 尝试自动编译
+    # 尝试使用系统命令编译
     try
-        # 使用 llc 编译为汇编文件
-        asm_file = output_file * ".s"
-        run(`llc $ir_file -o $asm_file`)
-        
-        # 使用 gcc 编译为二进制文件
-        run(`gcc $asm_file -o $output_file`)
+        # 使用 gcc 直接编译 LLVM IR
+        run(`gcc $ir_file -o $output_file`)
         
         # 清理临时文件
         rm(ir_file)
-        rm(asm_file)
         
         println("\nBinary file generated: $output_file")
     catch e
@@ -42,7 +39,23 @@ function compile_to_binary(ir::String, output_file::String)
     end
 end
 
+# 全局寄存器计数器
+register_counter = 0
+
+function reset_register_counter()
+    global register_counter = 0
+end
+
+function get_next_register()::String
+    global register_counter
+    register_counter += 1
+    return "%" * string(register_counter)
+end
+
 function codegen_function(func::FunctionDef)::String
+    # 重置寄存器计数器
+    reset_register_counter()
+    
     # 生成函数签名
     params_str = join(["i32 %" * name for (_, name) in func.params], ", ")
     ir = "define i32 @" * func.name * "(" * params_str * ") {\n"
@@ -86,7 +99,7 @@ function codegen_expression(expr::BinaryOp, params::Vector{Tuple{String, String}
     end
     
     # 生成临时寄存器
-    result_reg = "%" * string(hash(expr))
+    result_reg = get_next_register()
     
     # 生成 IR
     ir = left_ir * right_ir * "  " * result_reg * " = " * op * " i32 " * left_reg * ", " * right_reg * "\n"
@@ -100,7 +113,7 @@ end
 
 function codegen_expression(expr::Identifier, params::Vector{Tuple{String, String}})::Tuple{String, String}
     # 生成临时寄存器
-    result_reg = "%" * string(hash(expr))
+    result_reg = get_next_register()
     
     # 生成 IR
     ir = "  " * result_reg * " = load i32, i32* %" * expr.name * "\n"
